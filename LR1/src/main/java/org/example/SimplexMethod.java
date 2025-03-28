@@ -5,17 +5,10 @@ import java.util.Arrays;
 
 public class SimplexMethod {
 
-    public static void main(String[] args) {
-        int[] target = {-2, 4, -1};     // ЦФ заполняется коэффициентами от 1 до n, если в ЦФ нет базиса - не ставятся
-        int[][] source = {  {3,3,0,4,-1},       // Последний столбец - оператор: > "1", < "-1", = "0"
-                            {-1,1,1,2,0},
-                            {3,4,0,4, 1}};
+    public static void calculate(int[] target, int[][] source) {
 
-//        int[] target = {3, 4};     // ЦФ заполняется коэффициентами от 1 до n, если в ЦФ нет базиса - не ставятся
-//        int[][] source = {  {4,1,8,-1},       // Последний столбец - оператор: > "1", < "-1", = "0"
-//                {1,-1,-3,1}};
 
-        int mode = -1;               // -1 - максимум
+
 
 
         int n = source[1].length - 2;               // кол-во переменных (-2 тк там еще значение за знаком и сам знак)
@@ -25,25 +18,13 @@ public class SimplexMethod {
         int[] basisIndexes = new int[m];            // Хранятся индексы базисов из таблицы
         double[] targetBasis = new double[m];       // Вектор базисов ЦФ (коэф С)
         double[] vectorB = new double[m + 1];          // Вектор Значений за знаком (коэф b) + 1 тк включена строка оценок
-        double[] newVectorB = new double[m + 1];
+        double[] newVectorB;
         double[] newTarget = new double[l];
         double[] estimation = new double[l];        // Строка оценок
         double[][] table = new double[m + 1][l];    // Последняя строка - строка оценок
         double[][] new_table;
 
         // Блок 1 (инициализация рабочих таблиц, векторов, строк)
-//        int multiplier = mode;
-
-        // Инверсися всего
-//        for (int i = 0; i < m; i++) {
-//            for (int j = 0; j < source[i].length; j++) {
-//                source[i][j] = source[i][j] * multiplier;
-//            }
-////            source[i][source[i].length - 2] = source[i][source[i].length - 2] * multiplier;
-//        }
-//        for (int i = 0; i < target.length; i++) {
-//            target[i] = target[i] * multiplier;
-//        }
 
         for (int i = 0; i < m; i++) {
             boolean addBasis = source[i][source[i].length - 1] != 0;
@@ -74,18 +55,6 @@ public class SimplexMethod {
         for (int i = 0; i < l; i++) {
             estimation[i] = -newTarget[i];
         }
-
-
-
-        // Заполняем ряд оценок
-//        vectorB[m] = 0;
-//        for (int i = 0; i < estimation.length; i++) {
-//            double scalarMultOfCnB = 0;
-//            for (int j = 0; j < m; j++) {
-//                scalarMultOfCnB += targetBasis[j] * table[j][i];
-//            }
-//            estimation[i] = scalarMultOfCnB - newTarget[i];
-//        }
         table[m] = estimation;
 
         for (int i = 0; i < m; i++) {
@@ -93,11 +62,8 @@ public class SimplexMethod {
         }
 
 
-        while (true) {
+        while (!(Arrays.stream(table[m]).allMatch(w -> w >= 0) & vectorB[m] >= 0)) {    //TODO < - минимум
             //Блок StopCriterion
-            if (Arrays.stream(table[m]).allMatch(w -> w >= 0) & vectorB[m] >= 0){                     //TODO < - минимум
-                break;
-            }
 
 
             // Блок 2
@@ -172,5 +138,33 @@ public class SimplexMethod {
             vectorB = newVectorB;
         }
         // TODO Алгоритм вывода ответа
+        double[] tempVB = new double[l + 1];
+        for (int i =0; i < vectorB.length; i++) {
+            if (i == vectorB.length - 1) {
+                tempVB[tempVB.length-1] = vectorB[i];
+            } else {
+                tempVB[i] = vectorB[i];
+            }
+        }
+        double sum = 0;
+        StringBuilder output = new StringBuilder();
+//        System.out.println(Arrays.toString(vectorB));
+//        System.out.println(Arrays.toString(basisIndexes));
+
+        for (int i = 0; i < basisIndexes.length; i++) {
+            sum += newTarget[basisIndexes[i]] * tempVB[i];
+            if (basisIndexes[i] < n) {
+
+                output.append("x_")
+                        .append(basisIndexes[i] + 1)
+                        .append(" = ")
+                        .append(tempVB[i])
+                        .append("\n");
+            }
+        }
+        output.append("Target func value = ")
+                .append(sum);
+        System.out.println(output);
+
     }
 }
